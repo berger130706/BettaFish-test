@@ -1017,7 +1017,6 @@
         <div class="search-section">
             <div class="search-title">微舆 - 致力于打造简洁通用的舆情分析平台</div>
             <div class="search-row">
-                <button class="config-button" id="openConfigButton">LLM 配置</button>
                 <div class="search-box">
                     <input type="text" class="search-input" id="searchInput" placeholder="请输入要分析的内容...">
                     <button class="search-button" id="searchButton">开始</button>
@@ -1093,28 +1092,6 @@
         <div class="status-bar">
             <span id="connectionStatus">连接中...</span>
             <span id="systemTime"></span>
-        </div>
-    </div>
-
-    <div class="config-modal-overlay" id="configModal">
-        <div class="config-modal">
-            <div class="config-modal-header">
-                <div class="config-modal-title">LLM 配置 - 与.env文件双向同步</div>
-                <div class="config-modal-actions">
-                    <button class="config-secondary-button" id="refreshConfigButton">刷新</button>
-                    <button class="config-close-button" id="closeConfigModal" aria-label="关闭配置窗口">×</button>
-                </div>
-            </div>
-            <div class="config-modal-body" id="configFormContainer">
-                <!-- 由脚本填充 -->
-            </div>
-            <div class="config-modal-footer">
-                <div class="config-status-message" id="configStatusMessage"></div>
-                <div class="config-modal-footer-actions">
-                    <button class="config-save-button" id="saveConfigButton">保存</button>
-                    <button class="config-start-button" id="startSystemButton">保存并启动系统</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -1731,18 +1708,14 @@
         async function ensureSystemReadyOnLoad() {
             const status = await fetchSystemStatus();
             if (!status || !status.success) {
-                openConfigModal({
-                    lock: true,
-                    message: '无法获取系统状态，请检查配置后重试。'
-                });
+                // 不再自动弹出配置窗口，用户可以手动点击"LLM配置"按钮
+                console.log('无法获取系统状态');
                 return;
             }
 
             if (!status.started) {
-                openConfigModal({
-                    lock: true,
-                    message: '请先确认配置，然后点击“保存并启动系统”'
-                });
+                // 不再自动弹出配置窗口，用户可以手动点击"LLM配置"按钮
+                console.log('系统未启动，但允许用户直接使用');
             } else {
                 applySystemState(status);
                 configModalLocked = false;
