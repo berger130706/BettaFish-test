@@ -108,7 +108,7 @@ def init_database():
 
     # 创建舆情信息表
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS sentiment_items (
+        CREATE TABLE IF NOT EXISTS sentiment_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             platform TEXT NOT NULL,
             keyword TEXT NOT NULL,
@@ -181,7 +181,7 @@ def add_sample_data():
     cursor = conn.cursor()
 
     # 检查是否已有数据
-    cursor.execute("SELECT COUNT(*) FROM sentiment_items")
+    cursor.execute("SELECT COUNT(*) FROM sentiment_data")
     if cursor.fetchone()[0] > 0:
         conn.close()
         return
@@ -266,7 +266,7 @@ def add_sample_data():
 
     for item in sample_data:
         cursor.execute("""
-            INSERT INTO sentiment_items
+            INSERT INTO sentiment_data
             (platform, keyword, title, content, url, author, publish_time,
              crawl_time, hot_score, sentiment, sentiment_score, category, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -306,19 +306,19 @@ def get_statistics(date_filter, status_filter):
         status_condition = f"AND status = '{status_value}'"
 
     # 总监测数
-    total_query = f"SELECT COUNT(*) FROM sentiment_items WHERE 1=1 {date_condition} {status_condition}"
+    total_query = f"SELECT COUNT(*) FROM sentiment_data WHERE 1=1 {date_condition} {status_condition}"
     total_count = pd.read_sql_query(total_query, conn).iloc[0, 0]
 
     # 未处理数
-    unprocessed_query = f"SELECT COUNT(*) FROM sentiment_items WHERE status='unprocessed' {date_condition}"
+    unprocessed_query = f"SELECT COUNT(*) FROM sentiment_data WHERE status='unprocessed' {date_condition}"
     unprocessed_count = pd.read_sql_query(unprocessed_query, conn).iloc[0, 0]
 
     # 负面信息数
-    negative_query = f"SELECT COUNT(*) FROM sentiment_items WHERE sentiment='negative' {date_condition} {status_condition}"
+    negative_query = f"SELECT COUNT(*) FROM sentiment_data WHERE sentiment='negative' {date_condition} {status_condition}"
     negative_count = pd.read_sql_query(negative_query, conn).iloc[0, 0]
 
     # 价格问题数
-    price_query = f"SELECT COUNT(*) FROM sentiment_items WHERE category='价格问题' {date_condition} {status_condition}"
+    price_query = f"SELECT COUNT(*) FROM sentiment_data WHERE category='价格问题' {date_condition} {status_condition}"
     price_count = pd.read_sql_query(price_query, conn).iloc[0, 0]
 
     conn.close()
@@ -365,7 +365,7 @@ def get_items_list(platform_filter, category_filter, date_filter, status_filter,
     where_clause = " AND ".join(conditions) if conditions else "1=1"
 
     query = f"""
-        SELECT * FROM sentiment_items
+        SELECT * FROM sentiment_data
         WHERE {where_clause}
         ORDER BY crawl_time DESC
         LIMIT {page_size} OFFSET {(page-1)*page_size}
@@ -374,7 +374,7 @@ def get_items_list(platform_filter, category_filter, date_filter, status_filter,
     df = pd.read_sql_query(query, conn)
 
     # 获取总数
-    count_query = f"SELECT COUNT(*) FROM sentiment_items WHERE {where_clause}"
+    count_query = f"SELECT COUNT(*) FROM sentiment_data WHERE {where_clause}"
     total_count = pd.read_sql_query(count_query, conn).iloc[0, 0]
 
     conn.close()
@@ -387,7 +387,7 @@ def mark_as_processed(item_id):
     conn = sqlite3.connect("baiguoyuan_sentiment.db")
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE sentiment_items
+        UPDATE sentiment_data
         SET status = 'processed', processed_time = ?
         WHERE id = ?
     """, (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), item_id))
