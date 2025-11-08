@@ -135,8 +135,14 @@ def init_database():
 def analyze_sentiment_and_category(title, content):
     """使用DeepSeek进行情感分析和分类"""
     try:
+        # 从环境变量读取API密钥
+        import os
+        api_key = os.getenv("INSIGHT_ENGINE_API_KEY") or os.getenv("DEEPSEEK_API_KEY")
+        if not api_key:
+            raise ValueError("未配置DeepSeek API密钥，请在.env文件中设置INSIGHT_ENGINE_API_KEY")
+
         client = OpenAI(
-            api_key="sk-aecac2abdacb49488c4fb1e7d1c62a94",
+            api_key=api_key,
             base_url="https://api.deepseek.com"
         )
 

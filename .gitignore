@@ -344,3 +344,7 @@ insight_engine_streamlit_reports/
 media_engine_streamlit_reports/
 query_engine_streamlit_reports/
 final_reports/
+# 百果园项目特定文件
+baiguoyuan_sentiment.db
+backups/
+*.pid

@@ -277,7 +277,7 @@ DB_CHARSET = "utf8mb4"
 
 # DeepSeek API密钥
 MINDSPIDER_BASE_URL=your_api_base_url
-MINDSPIDER_API_KEY=sk-your-key
+MINDSPIDER_API_KEY=sk-your-deepseek-api-key-here
 MINDSPIDER_MODEL_NAME=deepseek-chat
 ```
 
