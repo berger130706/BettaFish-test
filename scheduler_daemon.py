@@ -129,19 +129,50 @@ def evening_task():
     logger.info("🌙 执行晚上定时任务（20:00）")
     run_crawl_task()
 
+def cleanup_data_task():
+    """凌晨2点数据清理任务"""
+    logger.info("🗑️  执行数据清理任务(02:00)")
+    logger.info("=" * 60)
+
+    try:
+        # 调用清理脚本
+        result = subprocess.run(
+            ["python", "cleanup_old_data.py"],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            timeout=300  # 5分钟超时
+        )
+
+        if result.returncode == 0:
+            logger.info("✅ 数据清理任务完成")
+            logger.info(result.stdout)
+        else:
+            logger.error("❌ 数据清理任务失败")
+            logger.error(result.stderr)
+    except subprocess.TimeoutExpired:
+        logger.error("❌ 数据清理任务超时(超过5分钟)")
+    except Exception as e:
+        logger.error(f"❌ 数据清理任务异常: {str(e)}")
+
+    logger.info("=" * 60)
+
 def main():
     """主函数"""
     logger.info("🚀 百果园舆情监测定时任务守护进程启动")
     logger.info(f"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info(f"定时任务配置:")
-    logger.info("  - 早上: 08:00")
-    logger.info("  - 中午: 13:00")
-    logger.info("  - 晚上: 20:00")
+    logger.info("  - 凌晨: 02:00 (数据清理)")
+    logger.info("  - 早上: 08:00 (爬取舆情)")
+    logger.info("  - 中午: 13:00 (爬取舆情)")
+    logger.info("  - 晚上: 20:00 (爬取舆情)")
     logger.info(f"监测平台: {', '.join(PLATFORMS)}")
     logger.info(f"关键词数量: {len(KEYWORDS)}")
+    logger.info(f"数据保留: 14天")
     logger.info("-" * 60)
 
     # 设置定时任务
+    schedule.every().day.at("02:00").do(cleanup_data_task)  # 新增:每天凌晨2点清理数据
     schedule.every().day.at("08:00").do(morning_task)
     schedule.every().day.at("13:00").do(noon_task)
     schedule.every().day.at("20:00").do(evening_task)
